@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#071f34">
+  <title>Painel administrativo | Jaques Marcondes</title>
+  <link rel="icon" href="/media/brand-logo-transparent.png" type="image/png"><link rel="stylesheet" href="/admin.css">
+  <script type="module" src="/admin.js"></script>
+</head>
+<body>
+  <main class="admin-shell">
+    <section class="login-card" id="login-view" hidden>
+      <a class="admin-brand" href="/" aria-label="Voltar ao site"><img src="/media/brand-logo-transparent.png" alt="Jaques Marcondes Corretor"></a>
+      <p class="eyebrow">ÁREA RESTRITA</p><h1>Acessar o painel</h1><p class="muted">Entre com seu usuário administrativo para gerenciar o catálogo.</p>
+      <form id="login-form"><label>Usuário<input name="username" autocomplete="username" required maxlength="80" placeholder="jasquesadm"></label><label>Senha<input name="password" type="password" autocomplete="current-password" required maxlength="128"></label><button class="button primary" type="submit">Entrar no painel</button><p class="notice" role="status" id="login-message"></p></form>
+      <a class="back-link" href="/">← Voltar ao site</a>
+    </section>
+
+    <div id="panel-view" hidden>
+      <header class="admin-header"><a href="/" class="admin-brand"><img src="/media/brand-logo-transparent.png" alt="Jaques Marcondes"><span>Painel administrativo<small>JAQUES MARCONDES · IMÓVEIS</small></span></a><div class="header-actions"><a class="button secondary" href="/" target="_blank" rel="noreferrer">Ver site ↗</a><button class="button secondary" id="logout" type="button">Sair</button></div></header>
+      <div class="admin-intro"><div><p class="eyebrow">CONTROLE DO SITE</p><h1>Seu catálogo,<br><em>bem apresentado.</em></h1></div><p>Edite as informações dos imóveis, controle o que está publicado e ajuste os dados de apresentação do site.</p></div>
+      <div class="admin-grid">
+        <section class="panel-card catalog-panel"><div class="panel-heading"><div><p class="eyebrow">PORTFÓLIO</p><h2>Imóveis</h2></div><button class="button primary" id="new-property" type="button">＋ Novo imóvel</button></div><p class="muted">Rascunhos ficam privados. Somente imóveis publicados aparecem no site.</p><div id="property-list" class="property-list" aria-live="polite"></div></section>
+        <section class="panel-card editor-panel" id="property-editor" hidden><div class="panel-heading"><div><p class="eyebrow">EDIÇÃO DO ANÚNCIO</p><h2 id="editor-title">Novo imóvel</h2></div><button class="icon-close" type="button" id="close-editor" aria-label="Fechar edição">×</button></div>
+          <form id="property-form" class="form-grid">
+            <input type="hidden" name="originalId">
+            <label class="wide">Título<input name="title" required maxlength="140"></label>
+            <label>Identificador (slug)<input name="slug" required pattern="[a-z0-9-]{3,120}" maxlength="120"></label><label>Código do imóvel<input name="code" required maxlength="32"></label>
+            <label>Tipo<input name="type" required maxlength="60" placeholder="Fazenda, casa, terreno…"></label><label>Finalidade<select name="purpose"><option>Venda</option><option>Locação</option></select></label>
+            <label>Município<input name="city" required maxlength="80"></label><label>Estado (UF)<input name="state" required maxlength="2" value="RO"></label>
+            <label>Área<input name="area" type="number" min="0" step="any"></label><label>Unidade da área<input name="areaUnit" maxlength="24" placeholder="m², hectares, alqueires"></label>
+            <label>Preço total (R$)<input name="price" type="number" min="0" step="1"></label><label>Preço por unidade (R$)<input name="pricePerUnit" type="number" min="0" step="1"></label>
+            <label>Área aberta/produtiva<input name="productiveArea" type="number" min="0" step="any"></label><label>Quartos<input name="bedrooms" type="number" min="0" step="1"></label>
+            <label>Banheiros<input name="bathrooms" type="number" min="0" step="1"></label><label>Vagas<input name="parking" type="number" min="0" step="1"></label>
+            <label>Status<select name="publication_status"><option value="draft">Rascunho (privado)</option><option value="published">Publicado</option><option value="unavailable">Indisponível</option></select></label><label>Ordem na vitrine<input name="position" type="number" step="1" value="10"></label>
+            <label class="check-label"><input name="featured" type="checkbox"> Destacar na vitrine</label><label>Selo curto<input name="badge" maxlength="40" placeholder="OPORTUNIDADE RURAL"></label>
+            <label class="wide">Resumo<textarea name="summary" rows="2" maxlength="240"></textarea></label><label class="wide">Descrição<textarea name="description" rows="5" maxlength="5000"></textarea></label><label class="wide">Observação sobre a origem/validação dos dados<textarea name="sourceNote" rows="2" maxlength="600"></textarea></label>
+            <label class="wide">Texto alternativo da imagem principal<input name="imageAlt" maxlength="240"></label><label class="wide">Fotos (uma URL ou caminho por linha)<textarea name="images" rows="3" placeholder="/media/foto.jpeg"></textarea></label><label class="wide upload-label">Adicionar foto<input type="file" id="photo-upload" accept="image/jpeg,image/png,image/webp"><small>JPG, PNG ou WebP · até 10 MB. A imagem será guardada no Supabase Storage.</small></label>
+            <div class="form-actions wide"><button class="button primary" type="submit">Salvar imóvel</button><button class="button secondary" type="button" id="delete-property" hidden>Excluir</button><p class="notice" id="property-message" role="status"></p></div>
+          </form>
+        </section>
+        <section class="panel-card settings-panel"><div class="panel-heading"><div><p class="eyebrow">APRESENTAÇÃO</p><h2>Dados do site</h2></div></div><form id="settings-form" class="settings-form"><label>Chamada principal<textarea name="heroTitle" rows="2" maxlength="160"></textarea></label><label>Texto de apoio<textarea name="heroCopy" rows="3" maxlength="300"></textarea></label><label>Etiqueta da chamada<input name="heroEyebrow" maxlength="80"></label><label>WhatsApp (com código do país)<input name="whatsapp" inputmode="numeric" maxlength="20"></label><label>Telefone exibido<input name="phoneDisplay" maxlength="30"></label><label>CRECI<input name="creci" maxlength="40"></label><button class="button primary" type="submit">Salvar apresentação</button><p class="notice" id="settings-message" role="status"></p></form></section>
+      </div>
+      <footer class="admin-footer">Acesso administrativo privado · alterações são salvas no banco remoto.</footer>
+    </div>
+  </main>
+</body>
+</html>

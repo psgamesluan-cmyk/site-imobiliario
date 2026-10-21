@@ -21,6 +21,43 @@ const contentTypes = {
   '.webp': 'image/webp',
 };
 
+const ADMIN_EDGE = 'https://hacdlxguzipxujhtrysl.supabase.co/functions/v1/site-admin';
+
+async function proxyAdmin(request, response, requestUrl) {
+  const action = requestUrl.searchParams.get('action') || 'public';
+  if (action === 'logout') {
+    response.writeHead(200, { 'Cache-Control': 'no-store', 'Content-Type': 'application/json; charset=utf-8', 'Set-Cookie': 'jaques_admin=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0' }).end('{"ok":true}');
+    return;
+  }
+  const cookie = String(request.headers.cookie || '').split(';').map((part) => part.trim()).find((part) => part.startsWith('jaques_admin='));
+  const headers = { 'Content-Type': request.headers['content-type'] || 'application/json', 'X-Forwarded-For': request.socket.remoteAddress || '' };
+  if (cookie) headers['x-admin-session'] = decodeURIComponent(cookie.slice('jaques_admin='.length));
+  const target = new URL(ADMIN_EDGE);
+  target.search = requestUrl.search;
+  let body;
+  if (!['GET', 'HEAD'].includes(request.method)) {
+    const chunks = [];
+    let total = 0;
+    for await (const chunk of request) {
+      total += chunk.length;
+      if (total > 16 * 1024 * 1024) {
+        response.writeHead(413).end('Payload too large');
+        return;
+      }
+      chunks.push(chunk);
+    }
+    body = Buffer.concat(chunks);
+  }
+  const result = await fetch(target, { method: request.method, headers, body: ['GET', 'HEAD'].includes(request.method) ? undefined : body });
+  const data = await result.text();
+  if (action === 'login' && result.ok) {
+    const token = JSON.parse(data).token;
+    response.writeHead(200, { 'Cache-Control': 'no-store', 'Content-Type': 'application/json; charset=utf-8', 'Set-Cookie': `jaques_admin=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=28800` }).end('{"ok":true}');
+    return;
+  }
+  response.writeHead(result.status, { 'Cache-Control': 'no-store', 'Content-Type': result.headers.get('content-type') || 'application/json; charset=utf-8', 'X-Content-Type-Options': 'nosniff' }).end(data);
+}
+
 function isLocalRequest(request) {
   const hostHeader = String(request.headers.host || '').toLowerCase();
   const remote = request.socket.remoteAddress || '';
@@ -29,11 +66,6 @@ function isLocalRequest(request) {
 }
 
 const server = createServer(async (request, response) => {
-  if (request.method !== 'GET' && request.method !== 'HEAD') {
-    response.writeHead(405, { Allow: 'GET, HEAD' }).end('Method not allowed');
-    return;
-  }
-
   let pathname;
   let requestUrl;
   try {
@@ -41,6 +73,20 @@ const server = createServer(async (request, response) => {
     pathname = decodeURIComponent(requestUrl.pathname);
   } catch {
     response.writeHead(400).end('Bad request');
+    return;
+  }
+
+  if (pathname === '/api/admin') {
+    if (!['GET', 'HEAD', 'POST', 'PUT', 'DELETE'].includes(request.method)) {
+      response.writeHead(405, { Allow: 'GET, HEAD, POST, PUT, DELETE' }).end('Method not allowed');
+      return;
+    }
+    try { await proxyAdmin(request, response, requestUrl); }
+    catch (error) { console.error('Admin API proxy failed:', error); response.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }).end('{"error":"Serviço administrativo indisponível."}'); }
+    return;
+  }
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    response.writeHead(405, { Allow: 'GET, HEAD' }).end('Method not allowed');
     return;
   }
 
@@ -71,6 +117,7 @@ const server = createServer(async (request, response) => {
     }
   }
 
+  if (pathname === '/admin' || pathname === '/admin/') pathname = '/admin.html';
   const relativePath = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
   const filePath = resolve(publicRoot, relativePath);
   if (filePath !== publicRoot && !filePath.startsWith(publicRoot + sep)) {

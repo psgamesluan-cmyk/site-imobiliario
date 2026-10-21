@@ -1,4 +1,8 @@
-const CONTACT = '5569984823333';
+let CONTACT = '5569984823333';
+let siteSettings = {};
+const displayPhone = () => siteSettings.phoneDisplay || '(69) 98482-3333';
+const phoneHref = () => `tel:+${String(CONTACT).replace(/\D/g, '')}`;
+const creciText = () => siteSettings.creci || 'CRECI-RO 5610';
 const MEDIA = '/media/';
 let properties = [
   {
@@ -51,7 +55,7 @@ const mediaDimensions = {
   'demo-property-31.png': [1448, 1086],
 };
 const imageDimensions = (file) => mediaDimensions[file] || (file.includes('complement-') ? [760, 760] : file.startsWith('illustrative-') ? [1536, 1024] : [720, 932]);
-const imagePath = (property, file) => property.demo ? `/_local/demo-media/${encodeURIComponent(file)}` : `${MEDIA}${encodeURIComponent(file)}`;
+const imagePath = (property, file) => property.demo ? `/_local/demo-media/${encodeURIComponent(file)}` : (/^(https?:|\/)/i.test(file) ? file : `${MEDIA}${encodeURIComponent(file)}`);
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const escapeHTML = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
@@ -141,7 +145,7 @@ function header() {
         <a class="brand" href="/" aria-label="Jaques Marcondes — início">
           <img src="${MEDIA}brand-logo-transparent.png" alt="Logo oficial Jaques Marcondes Corretor" width="78" height="78">
         </a>
-        <a class="header-phone" href="tel:+5569984823333"><span class="phone-mark" aria-hidden="true">↗</span><span>(69) 98482-3333</span></a>
+        <a class="header-phone" href="${phoneHref()}"><span class="phone-mark" aria-hidden="true">↗</span><span>${escapeHTML(displayPhone())}</span></a>
         <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Abrir menu"><span></span><span></span></button>
         <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
           <a href="/imoveis">Imóveis</a>
@@ -163,7 +167,7 @@ function footer() {
         <div class="footer-links"><a href="/imoveis">Ver imóveis</a><a href="/anunciar">Anunciar propriedade</a><a href="/contato">Contato</a></div>
         <a class="footer-contact" href="${whatsAppLink('Olá, Jaques. Gostaria de conversar sobre imóveis rurais.')}">Conversar no WhatsApp <span aria-hidden="true">↗</span></a>
       </div>
-      <div class="footer-bottom"><span>Jaques Marcondes · Corretor de imóveis</span><span>CRECI-RO 5610</span><span>© ${new Date().getFullYear()} · Rondônia, Brasil</span></div>
+      <div class="footer-bottom"><span>Jaques Marcondes · Corretor de imóveis</span><span>${escapeHTML(creciText())}</span><span>© ${new Date().getFullYear()} · Rondônia, Brasil</span></div>
     </footer>`;
 }
 
@@ -217,12 +221,12 @@ function homePage() {
         </div>
         <div class="hero-shade" aria-hidden="true"></div>
         <div class="hero-inner">
-          <p class="hero-eyebrow"><span></span> IMÓVEIS EM RONDÔNIA</p>
-          <h1>O próximo capítulo começa <em>em casa.</em></h1>
-          <p class="hero-copy">Encontre imóveis em Rondônia com orientação próxima em cada etapa.</p>
+          <p class="hero-eyebrow"><span></span> ${escapeHTML(siteSettings.heroEyebrow || 'IMÓVEIS EM RONDÔNIA')}</p>
+          <h1>${escapeHTML(siteSettings.heroTitle || 'O próximo capítulo começa em casa.')}</h1>
+          <p class="hero-copy">${escapeHTML(siteSettings.heroCopy || 'Encontre imóveis em Rondônia com orientação próxima em cada etapa.')}</p>
           <div class="hero-search" aria-label="Busca de imóveis"><div class="search-intents" role="group" aria-label="Finalidade da busca"><button type="button" class="search-intent is-active" data-search-intent="venda" aria-pressed="true">Comprar</button><button type="button" class="search-intent" data-search-intent="locação" aria-pressed="false">Alugar</button></div>${searchForm()}<div class="hero-search-links"><a href="/imoveis">Explorar imóveis <span aria-hidden="true">↗</span></a><a href="/favoritos">Favoritos salvos <span aria-hidden="true">♡</span></a></div></div>
         </div>
-        <div class="hero-side-note" aria-hidden="true"><span>CRECI-RO 5610</span><i></i><span>IMÓVEIS RURAIS</span></div>
+        <div class="hero-side-note" aria-hidden="true"><span>${escapeHTML(creciText())}</span><i></i><span>IMÓVEIS RURAIS</span></div>
         <div class="hero-bottom"><span>01 — PRESENÇA LOCAL</span><span>RO · BRASIL</span></div>
       </section>
 
@@ -235,7 +239,7 @@ function homePage() {
       <section class="advisor-editorial" aria-label="Apresentação do corretor Jaques Marcondes">
         <div class="advisor-editorial-inner content-wrap">
           <figure class="advisor-portrait"><img src="${MEDIA}brand-portrait-art.jpeg" alt="Peça de divulgação de Jaques Marcondes com texto de apresentação e retrato" loading="lazy"><figcaption>JAQUES MARCONDES · CORRETOR</figcaption></figure>
-          <div class="advisor-editorial-copy"><p class="eyebrow">ATENDIMENTO DIRETO · CRECI-RO 5610</p><h2>Encontrar o lugar certo pede uma boa <em>conversa.</em></h2><p>Conheça as propriedades anunciadas em Rondônia e converse diretamente com Jaques para tirar dúvidas, confirmar os detalhes e entender as condições de cada oportunidade.</p><a class="button button-light" href="${whatsAppLink('Olá, Jaques. Gostaria de conversar sobre os imóveis anunciados em Rondônia.') }" target="_blank" rel="noopener noreferrer">Falar com Jaques <span aria-hidden="true">↗</span></a></div>
+          <div class="advisor-editorial-copy"><p class="eyebrow">ATENDIMENTO DIRETO · ${escapeHTML(creciText())}</p><h2>Encontrar o lugar certo pede uma boa <em>conversa.</em></h2><p>Conheça as propriedades anunciadas em Rondônia e converse diretamente com Jaques para tirar dúvidas, confirmar os detalhes e entender as condições de cada oportunidade.</p><a class="button button-light" href="${whatsAppLink('Olá, Jaques. Gostaria de conversar sobre os imóveis anunciados em Rondônia.') }" target="_blank" rel="noopener noreferrer">Falar com Jaques <span aria-hidden="true">↗</span></a></div>
           <figure class="advisor-video"><video loop playsinline preload="none" controlslist="nodownload noplaybackrate noremoteplayback" disablepictureinpicture disableremoteplayback poster="${MEDIA}brand-portrait-art.jpeg" aria-label="Vídeo de apresentação do atendimento imobiliário"><source src="${MEDIA}atendimento-interior.mp4" type="video/mp4"></video><figcaption>CONVERSA DIRETA · RONDÔNIA</figcaption><div class="advisor-video-controls" role="group" aria-label="Controles do vídeo de apresentação"><button class="advisor-video-control" type="button" data-video-play aria-label="Reproduzir vídeo" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5z"/></svg></button><button class="advisor-video-control" type="button" data-video-sound aria-label="Ativar som" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6l-5 4H4Z"/><path d="m17 9 4 6m0-6-4 6"/></svg></button></div><p class="advisor-video-status visually-hidden" aria-live="polite"></p></figure>
         </div>
       </section>
@@ -285,7 +289,7 @@ function detailPage(property) {
           <section class="detail-section"><p class="eyebrow">DESCRIÇÃO</p><h2>${escapeHTML(presentationText(property.title, property))}</h2><p class="detail-description">${escapeHTML(presentationText(property.description, property))}</p></section>
           <section class="detail-section location-section"><p class="eyebrow">LOCALIZAÇÃO</p><h2>${escapeHTML(property.city)} <em>· ${property.state}</em></h2></section>
         </div>
-        <aside class="detail-aside"><div class="contact-card"><p class="eyebrow">VALOR / CONDIÇÃO</p><strong class="detail-price">${escapeHTML(priceText(property))}</strong><div class="contact-card-line"><span>Tipo</span><strong>${escapeHTML(property.type)}</strong></div><div class="contact-card-line"><span>Região</span><strong>${escapeHTML(property.city)} · ${property.state}</strong></div><a class="button button-dark button-wide" href="${whatsAppLink(`Olá, Jaques. Tenho interesse em ${property.title}, em ${property.city}. Pode me passar as condições atualizadas?`)}" target="_blank" rel="noopener noreferrer">Consultar no WhatsApp <span aria-hidden="true">↗</span></a><a class="button button-whatsapp button-wide" href="tel:+5569984823333">Ligar para (69) 98482-3333</a><p class="contact-note">Condições e disponibilidade devem ser confirmadas com o corretor.</p></div><button class="save-detail" type="button" data-favorite="${property.id}" aria-pressed="${readFavorites().includes(property.id)}">${readFavorites().includes(property.id) ? '♥ Salvo nos favoritos' : '♡ Salvar nos favoritos'}</button></aside>
+        <aside class="detail-aside"><div class="contact-card"><p class="eyebrow">VALOR / CONDIÇÃO</p><strong class="detail-price">${escapeHTML(priceText(property))}</strong><div class="contact-card-line"><span>Tipo</span><strong>${escapeHTML(property.type)}</strong></div><div class="contact-card-line"><span>Região</span><strong>${escapeHTML(property.city)} · ${property.state}</strong></div><a class="button button-dark button-wide" href="${whatsAppLink(`Olá, Jaques. Tenho interesse em ${property.title}, em ${property.city}. Pode me passar as condições atualizadas?`)}" target="_blank" rel="noopener noreferrer">Consultar no WhatsApp <span aria-hidden="true">↗</span></a><a class="button button-whatsapp button-wide" href="${phoneHref()}">Ligar para ${escapeHTML(displayPhone())}</a><p class="contact-note">Condições e disponibilidade devem ser confirmadas com o corretor.</p></div><button class="save-detail" type="button" data-favorite="${property.id}" aria-pressed="${readFavorites().includes(property.id)}">${readFavorites().includes(property.id) ? '♥ Salvo nos favoritos' : '♡ Salvar nos favoritos'}</button></aside>
       </div>
       <section class="related-section"><div class="section-heading"><div><p class="eyebrow">CONTINUE EXPLORANDO</p><h2>Outras oportunidades.</h2></div><a class="text-link" href="/imoveis">Ver portfólio <span aria-hidden="true">↗</span></a></div><div class="property-grid">${properties.filter((item) => item.id !== property.id).map(propertyCard).join('')}</div></section>
     </main>`;
@@ -298,7 +302,7 @@ function favoritesPage() {
 }
 
 function contactPage() {
-  return `<main id="conteudo" class="page-shell contact-page"><section class="page-intro"><div><p class="eyebrow">CONVERSA DIRETA</p><h1>Vamos falar<br><em>de oportunidades.</em></h1></div><p>Entre em contato para consultar disponibilidade, condições e informações de uma propriedade.</p></section><div class="contact-page-grid"><div class="contact-portrait"><img src="${MEDIA}brand-portrait-art.jpeg" alt="Jaques Marcondes, corretor de imóveis" loading="lazy"><span>JAQUES MARCONDES · CORRETOR</span></div><div class="contact-options"><p class="eyebrow">ESCOLHA SEU CANAL</p><h2>Atendimento<br><em>com quem anuncia.</em></h2><a class="contact-option" href="${whatsAppLink('Olá, Jaques. Gostaria de conversar sobre imóveis em Rondônia.')}" target="_blank" rel="noopener noreferrer"><span>WhatsApp</span><strong>(69) 98482-3333</strong><i aria-hidden="true">↗</i></a><a class="contact-option" href="tel:+5569984823333"><span>Telefone</span><strong>(69) 98482-3333</strong><i aria-hidden="true">↗</i></a><p class="source-note">Contato transcrito do material de divulgação fornecido.</p><p class="credential-line">Corretor de imóveis <strong>CRECI-RO 5610</strong></p></div></div></main>`;
+  return `<main id="conteudo" class="page-shell contact-page"><section class="page-intro"><div><p class="eyebrow">CONVERSA DIRETA</p><h1>Vamos falar<br><em>de oportunidades.</em></h1></div><p>Entre em contato para consultar disponibilidade, condições e informações de uma propriedade.</p></section><div class="contact-page-grid"><div class="contact-portrait"><img src="${MEDIA}brand-portrait-art.jpeg" alt="Jaques Marcondes, corretor de imóveis" loading="lazy"><span>JAQUES MARCONDES · CORRETOR</span></div><div class="contact-options"><p class="eyebrow">ESCOLHA SEU CANAL</p><h2>Atendimento<br><em>com quem anuncia.</em></h2><a class="contact-option" href="${whatsAppLink('Olá, Jaques. Gostaria de conversar sobre imóveis em Rondônia.')}" target="_blank" rel="noopener noreferrer"><span>WhatsApp</span><strong>${escapeHTML(displayPhone())}</strong><i aria-hidden="true">↗</i></a><a class="contact-option" href="${phoneHref()}"><span>Telefone</span><strong>${escapeHTML(displayPhone())}</strong><i aria-hidden="true">↗</i></a><p class="source-note">Contato transcrito do material de divulgação fornecido.</p><p class="credential-line">Corretor de imóveis <strong>${escapeHTML(creciText())}</strong></p></div></div></main>`;
 }
 
 function announcePage() {
@@ -755,12 +759,22 @@ window.addEventListener('storage', (event) => {
   render();
 });
 async function startApp() {
+  try {
+    const response = await fetch('/api/admin?action=public', { cache: 'no-store' });
+    if (!response.ok) throw new Error('Remote catalog unavailable');
+    const publicData = await response.json();
+    if (Array.isArray(publicData.properties)) properties = publicData.properties;
+    siteSettings = publicData.settings || {};
+    if (siteSettings.whatsapp) CONTACT = String(siteSettings.whatsapp).replace(/\D/g, '');
+  } catch {
+    // Keep the checked-in public listings available if the remote catalog is temporarily unavailable.
+  }
   if (LOCAL_DEMO) {
     try {
       const response = await fetch('/_local/demo-properties.json', { cache: 'no-store' });
       if (!response.ok) throw new Error('Demo data is unavailable');
       const demoProperties = await response.json();
-      if (Array.isArray(demoProperties) && demoProperties.length >= 30) properties.push(...demoProperties);
+      if (Array.isArray(demoProperties) && demoProperties.length >= 30) properties.push(...demoProperties.filter((demo) => !properties.some((property) => property.id === demo.id)));
     } catch {
       document.body.insertAdjacentHTML('afterbegin', '<p class="demo-error">A demonstração local não está disponível neste servidor.</p>');
     }
