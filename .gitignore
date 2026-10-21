@@ -1,0 +1,17 @@
+/data/*
+!/data/.gitkeep
+!/data/demo-properties.json
+!/data/demo-media/
+/data/demo-media/*
+!/data/demo-media/*.jpg
+!/data/demo-media/*.png
+/node_modules/
+/.env
+/.env.*
+!/.env.example
+/public/uploads/
+*.log
+*.tmp
+*.sqlite-shm
+*.sqlite-wal
+/coverage/
