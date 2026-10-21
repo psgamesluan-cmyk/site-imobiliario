@@ -55,15 +55,15 @@ const mediaDimensions = {
   'demo-property-31.png': [1448, 1086],
 };
 const imageDimensions = (file) => mediaDimensions[file] || (file.includes('complement-') ? [760, 760] : file.startsWith('illustrative-') ? [1536, 1024] : [720, 932]);
-const imagePath = (property, file) => property.demo ? `/_local/demo-media/${encodeURIComponent(file)}` : (/^(https?:|\/)/i.test(file) ? file : `${MEDIA}${encodeURIComponent(file)}`);
+const imagePath = (property, file) => property.demo ? `/demo-media/${encodeURIComponent(file)}` : (/^(https?:|\/)/i.test(file) ? file : `${MEDIA}${encodeURIComponent(file)}`);
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const escapeHTML = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const money = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(value);
 const areaText = (property) => `${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(property.area)} ${property.areaUnit}`;
-const LOCAL_DEMO = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) && new URLSearchParams(location.search).get('demo') === '1';
+const DEMO_MODE = new URLSearchParams(location.search).get('demo') === '1';
 const priceText = (property) => property.pricePerUnit ? `${money(property.pricePerUnit)} / alqueire` : property.price ? `${money(property.price)}${property.pricePeriod ? ` ${property.pricePeriod}` : ''}` : 'Consulte valores';
-const pathFor = (property) => `/imovel/${property.slug}${LOCAL_DEMO && property.demo ? '?demo=1' : ''}`;
+const pathFor = (property) => `/imovel/${property.slug}${DEMO_MODE && property.demo ? '?demo=1' : ''}`;
 const propertyCode = (property) => property.code || (property.id === 'rolim-85-alqueires' ? 'JM-RO-085' : 'JM-VH-821');
 const propertyBySlug = (slug) => properties.find((property) => property.slug === slug);
 let favoriteCache = null;
@@ -131,7 +131,7 @@ function whatsAppLink(message) {
 }
 
 function withDemoQuery(path) {
-  if (!LOCAL_DEMO) return path;
+  if (!DEMO_MODE) return path;
   const url = new URL(path, location.origin);
   url.searchParams.set('demo', '1');
   return `${url.pathname}${url.search}${url.hash}`;
@@ -189,7 +189,7 @@ function propertyCard(property, index = 0) {
         <p class="property-location"><span aria-hidden="true">⌖</span> ${escapeHTML(property.city)} <span>· ${property.state}</span></p>
         <h3><a href="${pathFor(property)}">${escapeHTML(presentationText(property.title, property))}</a></h3>
         <p class="card-summary">${escapeHTML(presentationText(property.summary, property))}</p>
-        <div class="card-price-row"><strong>${escapeHTML(priceText(property))}</strong><a class="contact-circle" href="${whatsAppLink(`Olá! Tenho interesse no imóvel ${code}. Gostaria de receber mais informações: ${new URL(pathFor(property), location.origin).href}`)}" target="_blank" rel="noopener noreferrer" aria-label="Perguntar no WhatsApp sobre ${escapeHTML(presentationText(property.title, property))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.7a8.4 8.4 0 0 1-12.4 7.4L3 20.4l1.3-4.9A8.4 8.4 0 1 1 20.5 11.7Z"/><path d="M9 8.3c.2-.4.4-.4.7-.4h.5c.2 0 .4.1.5.4l.7 1.7c.1.2.1.4-.1.6l-.5.6c-.2.2-.2.4-.1.6.5.9 1.2 1.6 2.1 2.1.2.1.4.1.6-.1l.7-.8c.2-.2.4-.2.6-.1l1.6.8c.3.1.4.3.4.5 0 .3-.2 1-.6 1.4-.4.4-1.1.6-1.5.6-.4 0-1.7-.3-3.2-1.6-1.7-1.5-2.2-2.9-2.4-3.4-.2-.5 0-1.7.4-2.3Z"/></svg></a></div>
+        <div class="card-price-row"><strong>${escapeHTML(priceText(property))}</strong><a class="contact-circle" href="${isDemo ? pathFor(property) : whatsAppLink(`Olá! Tenho interesse no imóvel ${code}. Gostaria de receber mais informações: ${new URL(pathFor(property), location.origin).href}`)}" ${isDemo ? "aria-label=\"Abrir prévia demonstrativa de ${escapeHTML(presentationText(property.title, property))}\"" : "target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"Perguntar no WhatsApp sobre ${escapeHTML(presentationText(property.title, property))}\""}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.7a8.4 8.4 0 0 1-12.4 7.4L3 20.4l1.3-4.9A8.4 8.4 0 1 1 20.5 11.7Z"/><path d="M9 8.3c.2-.4.4-.4.7-.4h.5c.2 0 .4.1.5.4l.7 1.7c.1.2.1.4-.1.6l-.5.6c-.2.2-.2.4-.1.6.5.9 1.2 1.6 2.1 2.1.2.1.4.1.6-.1l.7-.8c.2-.2.4-.2.6-.1l1.6.8c.3.1.4.3.4.5 0 .3-.2 1-.6 1.4-.4.4-1.1.6-1.5.6-.4 0-1.7-.3-3.2-1.6-1.7-1.5-2.2-2.9-2.4-3.4-.2-.5 0-1.7.4-2.3Z"/></svg></a></div>
         <div class="property-meta"><span><small>Área</small>${escapeHTML(areaText(property))}</span><span><small>Vagas</small>${property.parking ?? '—'}</span><span><small>Quartos</small>${property.bedrooms ?? '—'}</span></div>
       </div>
     </article>`;
@@ -289,7 +289,7 @@ function detailPage(property) {
           <section class="detail-section"><p class="eyebrow">DESCRIÇÃO</p><h2>${escapeHTML(presentationText(property.title, property))}</h2><p class="detail-description">${escapeHTML(presentationText(property.description, property))}</p></section>
           <section class="detail-section location-section"><p class="eyebrow">LOCALIZAÇÃO</p><h2>${escapeHTML(property.city)} <em>· ${property.state}</em></h2></section>
         </div>
-        <aside class="detail-aside"><div class="contact-card"><p class="eyebrow">VALOR / CONDIÇÃO</p><strong class="detail-price">${escapeHTML(priceText(property))}</strong><div class="contact-card-line"><span>Tipo</span><strong>${escapeHTML(property.type)}</strong></div><div class="contact-card-line"><span>Região</span><strong>${escapeHTML(property.city)} · ${property.state}</strong></div><a class="button button-dark button-wide" href="${whatsAppLink(`Olá, Jaques. Tenho interesse em ${property.title}, em ${property.city}. Pode me passar as condições atualizadas?`)}" target="_blank" rel="noopener noreferrer">Consultar no WhatsApp <span aria-hidden="true">↗</span></a><a class="button button-whatsapp button-wide" href="${phoneHref()}">Ligar para ${escapeHTML(displayPhone())}</a><p class="contact-note">Condições e disponibilidade devem ser confirmadas com o corretor.</p></div><button class="save-detail" type="button" data-favorite="${property.id}" aria-pressed="${readFavorites().includes(property.id)}">${readFavorites().includes(property.id) ? '♥ Salvo nos favoritos' : '♡ Salvar nos favoritos'}</button></aside>
+        <aside class="detail-aside"><div class="contact-card"><p class="eyebrow">VALOR / CONDIÇÃO</p><strong class="detail-price">${escapeHTML(priceText(property))}</strong><div class="contact-card-line"><span>Tipo</span><strong>${escapeHTML(property.type)}</strong></div><div class="contact-card-line"><span>Região</span><strong>${escapeHTML(property.city)} · ${property.state}</strong></div>${property.demo ? '<p class="demo-detail-note">Prévia ilustrativa: este imóvel não está disponível para negociação. Dados e condições são fictícios.</p>' : `<a class="button button-dark button-wide" href="${whatsAppLink(`Olá, Jaques. Tenho interesse em ${property.title}, em ${property.city}. Pode me passar as condições atualizadas?`)}" target="_blank" rel="noopener noreferrer">Consultar no WhatsApp <span aria-hidden="true">↗</span></a><a class="button button-whatsapp button-wide" href="${phoneHref()}">Ligar para ${escapeHTML(displayPhone())}</a><p class="contact-note">Condições e disponibilidade devem ser confirmadas com o corretor.</p>`}</div><button class="save-detail" type="button" data-favorite="${property.id}" aria-pressed="${readFavorites().includes(property.id)}">${readFavorites().includes(property.id) ? '♥ Salvo nos favoritos' : '♡ Salvar nos favoritos'}</button></aside>
       </div>
       <section class="related-section"><div class="section-heading"><div><p class="eyebrow">CONTINUE EXPLORANDO</p><h2>Outras oportunidades.</h2></div><a class="text-link" href="/imoveis">Ver portfólio <span aria-hidden="true">↗</span></a></div><div class="property-grid">${properties.filter((item) => item.id !== property.id).map(propertyCard).join('')}</div></section>
     </main>`;
@@ -332,7 +332,8 @@ function render() {
   activeObservers.forEach((observer) => observer.disconnect());
   activeObservers = [];
   $('#app').querySelectorAll('video').forEach((video) => video.pause());
-  $('#app').innerHTML = `${header()}${content}${footer()}<div class="toast" role="status" aria-live="polite"></div><dialog class="lightbox" aria-label="Imagem ampliada"><button class="lightbox-close" type="button" aria-label="Fechar imagem">×</button><img alt="Imagem ampliada da propriedade"></dialog>`;
+  const demoNotice = DEMO_MODE ? '<aside class="showcase-notice" role="note"><strong>Modo de demonstração · 31 imóveis ilustrativos</strong><span>Valores, descrições e imagens podem ser fictícios. Não são ofertas reais; confirme qualquer informação com o corretor.</span></aside>' : '';
+  $('#app').innerHTML = `${header()}${demoNotice}${content}${footer()}<div class="toast" role="status" aria-live="polite"></div><dialog class="lightbox" aria-label="Imagem ampliada"><button class="lightbox-close" type="button" aria-label="Fechar imagem">×</button><img alt="Imagem ampliada da propriedade"></dialog>`;
   document.title = title;
   bindInteractions();
 }
@@ -769,9 +770,9 @@ async function startApp() {
   } catch {
     // Keep the checked-in public listings available if the remote catalog is temporarily unavailable.
   }
-  if (LOCAL_DEMO) {
+  if (DEMO_MODE) {
     try {
-      const response = await fetch('/_local/demo-properties.json', { cache: 'no-store' });
+      const response = await fetch('/demo-properties.json', { cache: 'no-store' });
       if (!response.ok) throw new Error('Demo data is unavailable');
       const demoProperties = await response.json();
       if (Array.isArray(demoProperties) && demoProperties.length >= 30) properties.push(...demoProperties.filter((demo) => !properties.some((property) => property.id === demo.id)));

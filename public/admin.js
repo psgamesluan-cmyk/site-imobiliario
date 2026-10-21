@@ -6,6 +6,7 @@ const editor = $('#property-editor');
 const propertyForm = $('#property-form');
 let properties = [];
 let settings = {};
+let demoProperties = [];
 
 async function api(action, { method = 'GET', body, query = '' } = {}) {
   const response = await fetch(`/api/admin?action=${encodeURIComponent(action)}${query}`, {
@@ -45,6 +46,20 @@ function renderList() {
     const label = status === 'published' ? 'Publicado' : status === 'unavailable' ? 'Indisponível' : 'Rascunho';
     return `<article class="property-row"><div><h3>${escapeHTML(property.data?.title || property.id)}</h3><p>${escapeHTML(property.code)} · ${escapeHTML(property.data?.city || 'Município não informado')} · ${escapeHTML(property.data?.purpose || 'Finalidade não informada')}</p></div><div class="property-row-actions"><span class="status-pill ${escapeHTML(status)}">${label}</span><button class="edit-button" type="button" data-edit="${escapeHTML(property.id)}">Editar</button></div></article>`;
   }).join('') : '<p class="empty-message">Nenhum imóvel cadastrado. Use “Novo imóvel” para criar o primeiro anúncio.</p>';
+}
+
+async function loadDemoPreview() {
+  const target = $('#demo-property-list');
+  const count = $('#demo-count');
+  try {
+    const response = await fetch('/demo-properties.json', { cache: 'no-store' });
+    if (!response.ok) throw new Error('Vitrine indisponível.');
+    demoProperties = await response.json();
+    count.textContent = `(${demoProperties.length})`;
+    target.innerHTML = demoProperties.map((property) => `<article class="property-row"><div><h3>${escapeHTML(property.title)}</h3><p>${escapeHTML(property.code)} · ${escapeHTML(property.city)} · ${escapeHTML(property.type)}</p></div><div class="property-row-actions"><span class="status-pill">DEMO</span><a class="edit-button" href="/imovel/${encodeURIComponent(property.slug)}?demo=1" target="_blank" rel="noreferrer">Prévia ↗</a></div></article>`).join('');
+  } catch {
+    target.innerHTML = '<p class="empty-message">Não foi possível carregar a vitrine demonstrativa.</p>';
+  }
 }
 
 function hydrateSettings(data) {
@@ -193,6 +208,7 @@ $('#login-form').addEventListener('submit', async (event) => {
 $('#logout').addEventListener('click', async () => { try { await api('logout', { method: 'POST' }); } finally { showLogin(); } });
 
 async function start() {
+  loadDemoPreview();
   try { await api('session'); await loadPanel(); }
   catch { showLogin(); }
 }
