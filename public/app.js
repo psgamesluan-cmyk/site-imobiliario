@@ -185,7 +185,7 @@ function propertyCard(property, index = 0) {
         ${!isDemo && property.badge ? `<span class="property-badge">${escapeHTML(property.badge)}</span>` : ''}
       </div>
       <div class="property-card-body">
-        <div class="property-card-utility"><span class="property-code">${escapeHTML(code)}</span><div class="property-tool-stack">${isDemo ? '<span class="demo-chip" aria-label="Identificador interno">DEMO</span>' : ''}<div class="property-actions"><button class="icon-button share-button" type="button" data-share="${property.id}" aria-label="Compartilhar ${escapeHTML(presentationText(property.title, property))}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.6 6.6-4.2m-6.6 7 6.6 4"/></svg></button><button class="icon-button save-button ${favorite ? 'is-saved' : ''}" type="button" data-favorite="${property.id}" aria-label="${favorite ? 'Remover dos' : 'Adicionar aos'} favoritos" aria-pressed="${favorite}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.8c0 5.2-8.8 10.2-8.8 10.2S3.2 14 3.2 8.8A4.7 4.7 0 0 1 12 6.1a4.7 4.7 0 0 1 8.8 2.7Z"/></svg></button></div></div></div>
+        <div class="property-card-utility"><span class="property-code">${escapeHTML(code)}</span><div class="property-tool-stack">${isDemo ? '<span class="demo-chip" aria-label="Imóvel ilustrativo">EXEMPLO</span>' : ''}<div class="property-actions"><button class="icon-button share-button" type="button" data-share="${property.id}" aria-label="Compartilhar ${escapeHTML(presentationText(property.title, property))}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.6 6.6-4.2m-6.6 7 6.6 4"/></svg></button><button class="icon-button save-button ${favorite ? 'is-saved' : ''}" type="button" data-favorite="${property.id}" aria-label="${favorite ? 'Remover dos' : 'Adicionar aos'} favoritos" aria-pressed="${favorite}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.8c0 5.2-8.8 10.2-8.8 10.2S3.2 14 3.2 8.8A4.7 4.7 0 0 1 12 6.1a4.7 4.7 0 0 1 8.8 2.7Z"/></svg></button></div></div></div>
         <p class="property-location"><span aria-hidden="true">⌖</span> ${escapeHTML(property.city)} <span>· ${property.state}</span></p>
         <h3><a href="${pathFor(property)}">${escapeHTML(presentationText(property.title, property))}</a></h3>
         <p class="card-summary">${escapeHTML(presentationText(property.summary, property))}</p>
@@ -332,8 +332,7 @@ function render() {
   activeObservers.forEach((observer) => observer.disconnect());
   activeObservers = [];
   $('#app').querySelectorAll('video').forEach((video) => video.pause());
-  const demoNotice = DEMO_MODE ? '<aside class="showcase-notice" role="note"><strong>Modo de demonstração · 31 imóveis ilustrativos</strong><span>Valores, descrições e imagens podem ser fictícios. Não são ofertas reais; confirme qualquer informação com o corretor.</span></aside>' : '';
-  $('#app').innerHTML = `${header()}${demoNotice}${content}${footer()}<div class="toast" role="status" aria-live="polite"></div><dialog class="lightbox" aria-label="Imagem ampliada"><button class="lightbox-close" type="button" aria-label="Fechar imagem">×</button><img alt="Imagem ampliada da propriedade"></dialog>`;
+  $('#app').innerHTML = `${header()}${content}${footer()}<div class="toast" role="status" aria-live="polite"></div><dialog class="lightbox" aria-label="Imagem ampliada"><button class="lightbox-close" type="button" aria-label="Fechar imagem">×</button><img alt="Imagem ampliada da propriedade"></dialog>`;
   document.title = title;
   bindInteractions();
 }
@@ -770,15 +769,13 @@ async function startApp() {
   } catch {
     // Keep the checked-in public listings available if the remote catalog is temporarily unavailable.
   }
-  if (DEMO_MODE) {
-    try {
-      const response = await fetch('/demo-properties.json', { cache: 'no-store' });
-      if (!response.ok) throw new Error('Demo data is unavailable');
-      const demoProperties = await response.json();
-      if (Array.isArray(demoProperties) && demoProperties.length >= 30) properties.push(...demoProperties.filter((demo) => !properties.some((property) => property.id === demo.id)));
-    } catch {
-      document.body.insertAdjacentHTML('afterbegin', '<p class="demo-error">A demonstração local não está disponível neste servidor.</p>');
-    }
+  try {
+    const response = await fetch('/demo-properties.json', { cache: 'no-store' });
+    if (!response.ok) throw new Error('Illustrative properties are unavailable');
+    const illustrativeProperties = await response.json();
+    if (Array.isArray(illustrativeProperties)) properties.push(...illustrativeProperties.filter((property) => !properties.some((existing) => existing.id === property.id)));
+  } catch {
+    // The verified public listings remain available if the optional illustrative catalog is unavailable.
   }
   render();
 }
